@@ -25,7 +25,10 @@ public static class QueryMakerResultExtension
 	public static async Task<QueryMakerData<T>> GetDataAsync<T>(this QueryMakerResult<T> queryMakerResult,
 		CancellationToken cancellationToken = default)
 	{
-		return new (await queryMakerResult.PaginatedQuery.ToArrayAsync(cancellationToken),
-			await queryMakerResult.UnpaginatedQuery.CountAsync(cancellationToken));
+		return queryMakerResult.PaginatedQuery is IAsyncEnumerable<T>
+			? new (await queryMakerResult.PaginatedQuery.ToArrayAsync(cancellationToken),
+				await queryMakerResult.UnpaginatedQuery.CountAsync(cancellationToken))
+			: new (queryMakerResult.PaginatedQuery.ToArray(),
+				queryMakerResult.UnpaginatedQuery.Count());
 	}
 }
